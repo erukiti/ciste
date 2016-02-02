@@ -133,8 +133,15 @@ CMD bash -l -c "cd /app ; npm start"
 
 		ioutil.WriteFile(fmt.Sprintf("%s/Dockerfile", appPath), dockerfile, 0644)
 
-		execCommand(appPath, "docker", "build", "-t", "node:local", ".")
-		execCommand(appPath, "docker", "run", "--rm", "node:local")
+		var success bool
+
+		success = execCommand(appPath, "docker", "build", "-t", "node:local", ".")
+		if !success {
+			os.Exit(1)
+		}
+		success = execCommand(appPath, "docker", "run", "--rm", "node:local", "bash", "-l", "npm", "test")
+		fmt.Println(success)
+
 	}
 
 	_ = home
@@ -142,7 +149,7 @@ CMD bash -l -c "cd /app ; npm start"
 	os.Exit(1)
 }
 
-func execCommand(dir string, args ...string) {
+func execCommand(dir string, args ...string) bool {
 	var err error
 
 	cmd := exec.Command(args[0], args[1:]...)
@@ -170,8 +177,10 @@ func execCommand(dir string, args ...string) {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	err = cmd.Wait()
+	st, err := cmd.Process.Wait()
 	if err != nil {
 		fmt.Println(err)
+		os.Exit(1)
 	}
+	return st.Success()
 }
