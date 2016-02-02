@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"strings"
 )
 
@@ -22,10 +23,13 @@ func main() {
 		log.SetOutput(logWriter)
 	}
 
-	cwd, err := os.Getwd()
+	current, err := user.Current()
+	var home string
 	if err != nil {
-		log.Println(err)
-		cwd = "/home/git"
+		log.Printf("failed user.Current: %s", err)
+		home = "/home/git"
+	} else {
+		home = current.HomeDir
 	}
 
 	original := os.Getenv("SSH_ORIGINAL_COMMAND")
@@ -37,7 +41,7 @@ func main() {
 	case "ssh":
 		// len
 
-		repoPath := fmt.Sprintf("%s/repository/%s", cwd, repo)
+		repoPath := fmt.Sprintf("%s/repository/%s", home, repo)
 
 		_, err := os.Stat(repoPath)
 		if err != nil && os.IsNotExist(err) {
@@ -77,11 +81,45 @@ func main() {
 	case "receive":
 		log.Println("receive start")
 
-		fmt.Println("hoge")
+		fmt.Printf("%v\n", os.Args)
+
+		buf := make([]byte, 1024)
+		n, err := os.Stdin.Read(buf)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		if n == 0 {
+			fmt.Println("failed: get refs")
+			os.Exit(1)
+		}
+
+		ar := strings.Split(string(buf), " ")
+		if len(ar) < 3 {
+			fmt.Println("illegal refs")
+			fmt.Println(ar)
+			os.Exit(1)
+		}
+
+		newrefs := ar[1]
+		// ar = strings.Split(ar[2], "/")
+		fmt.Println(newrefs)
+		appPath := fmt.Sprintf("%s/app/%s", home, newrefs)
+		fmt.Println(appPath)
+		os.MkdirAll(appPath, 0755)
+		repoPath := fmt.Sprintf("%s/repository/%s", home, os.Args[4])
+		copyCommand := fmt.Sprintf("cd %s ; (cd %s ; git archive %s) | tar xvf -", appPath, repoPath, newrefs)
+		fmt.Println(copyCommand)
+		out, err := exec.Command("/bin/sh", "-c", copyCommand).Output()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		fmt.Println(string(out))
 
 	}
 
-	_ = cwd
+	_ = home
 
 	os.Exit(1)
 }
