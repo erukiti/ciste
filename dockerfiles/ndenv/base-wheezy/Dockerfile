@@ -1,5 +1,5 @@
-#docker build -t ndenv:base-wheezy .
+#docker build -t erukiti/ndenv:base-wheezy .
 
-FROM anyenv:base-wheezy
+FROM erukiti/anyenv:base-wheezy
 
 RUN anyenv install ndenv

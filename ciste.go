@@ -112,14 +112,66 @@ func main() {
 		fmt.Println(copyCommand)
 		out, err := exec.Command("/bin/sh", "-c", copyCommand).Output()
 		if err != nil {
+			fmt.Println(out)
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		fmt.Println(string(out))
 
+		// _, err := os.Stat(fmt.Sprintf("%s/package.json", appPath))
+
+		dockerfile := []byte(`
+FROM ndenv:base-wheezy
+
+RUN mkdir /app
+ADD * /app/
+WORKDIR /app
+
+RUN bash -l -c "ndenv install"
+RUN bash -l -c "npm install"
+CMD bash -l -c "cd /app ; npm start"
+`)
+
+		ioutil.WriteFile(fmt.Sprintf("%s/Dockerfile", appPath), dockerfile, 0644)
+
+		execCommand(appPath, "docker", "build", "-t", "node:local", ".")
+		execCommand(appPath, "docker", "run", "--rm", "node:local")
 	}
 
 	_ = home
 
 	os.Exit(1)
+}
+
+func execCommand(dir string, args ...string) {
+	var err error
+
+	cmd := exec.Command(args[0], args[1:]...)
+	cmd.Dir = dir
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer stdout.Close()
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer stderr.Close()
+
+	go io.Copy(os.Stdout, stdout)
+	go io.Copy(os.Stdout, stderr)
+
+	err = cmd.Start()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	err = cmd.Wait()
+	if err != nil {
+		fmt.Println(err)
+	}
 }

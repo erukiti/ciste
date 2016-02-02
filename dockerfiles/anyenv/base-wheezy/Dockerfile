@@ -1,4 +1,4 @@
-#docker build -t anyenv:base-wheezy .
+#docker build -t erukiti/anyenv:base-wheezy .
 
 FROM buildpack-deps:wheezy
 
