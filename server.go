@@ -1,13 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/erukiti/go-util"
 	"log"
-	// "net/http"
-	"encoding/json"
 	"net"
+	// "net/http"
 	"os"
 	"time"
 )
@@ -63,6 +63,8 @@ func cisteServer(home string, args []string) {
 			}(fd)
 		}
 	}()
+
+	cisteHttpServer()
 
 	for {
 		time.Sleep(1 * time.Second)
