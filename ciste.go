@@ -1,7 +1,24 @@
+/*
+Copyright 2016 SASAKI, Shunsuke. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package main
 
 import (
 	"fmt"
+	"github.com/erukiti/go-util"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,14 +28,16 @@ import (
 	"strings"
 )
 
+const PidFile = "~/.ciste/pid"
+
 func main() {
 	var err error
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	logWriter, err := os.OpenFile("log.txt", os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	logWriter, err := os.OpenFile(util.PathResolv("/", "~/log.txt"), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
-		fmt.Printf("log file error: %s\n", err)
+		log.Printf("log file error: %s\n", err)
 	} else {
 		log.SetOutput(logWriter)
 	}
@@ -32,14 +51,14 @@ func main() {
 		home = current.HomeDir
 	}
 
-	original := os.Getenv("SSH_ORIGINAL_COMMAND")
-	sp := strings.Split(original, " ")
-	originalCommand := sp[0]
-	repo := strings.Trim(sp[1], "'")
-
 	switch os.Args[1] {
 	case "ssh":
 		// len
+
+		original := os.Getenv("SSH_ORIGINAL_COMMAND")
+		sp := strings.Split(original, " ")
+		originalCommand := sp[0]
+		repo := strings.Trim(sp[1], "'")
 
 		repoPath := fmt.Sprintf("%s/repository/%s", home, repo)
 
@@ -117,70 +136,15 @@ func main() {
 			os.Exit(1)
 		}
 
-		// _, err := os.Stat(fmt.Sprintf("%s/package.json", appPath))
+		fmt.Println("hoge")
 
-		dockerfile := []byte(`
-FROM ndenv:base-wheezy
+		dispatch(appPath)
 
-RUN mkdir /app
-ADD * /app/
-WORKDIR /app
-
-RUN bash -l -c "ndenv install"
-RUN bash -l -c "npm install"
-CMD bash -l -c "cd /app ; npm start"
-`)
-
-		ioutil.WriteFile(fmt.Sprintf("%s/Dockerfile", appPath), dockerfile, 0644)
-
-		var success bool
-
-		success = execCommand(appPath, "docker", "build", "-t", "node:local", ".")
-		if !success {
-			os.Exit(1)
-		}
-		success = execCommand(appPath, "docker", "run", "--rm", "node:local", "bash", "-l", "npm", "test")
-		fmt.Println(success)
-
+	case "server":
+		cisteServer(home, os.Args[2:])
 	}
 
 	_ = home
 
 	os.Exit(1)
-}
-
-func execCommand(dir string, args ...string) bool {
-	var err error
-
-	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Dir = dir
-
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer stdout.Close()
-
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	defer stderr.Close()
-
-	go io.Copy(os.Stdout, stdout)
-	go io.Copy(os.Stdout, stderr)
-
-	err = cmd.Start()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	st, err := cmd.Process.Wait()
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-	return st.Success()
 }
