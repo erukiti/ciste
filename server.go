@@ -15,6 +15,7 @@ import (
 func cisteServer(home string, args []string) {
 	fs := flag.NewFlagSet("server", flag.ExitOnError)
 	logFile := fs.String("log", "~/.ciste/log.txt", "log file")
+	httpdPort := fs.Int("port", 3000, "httpd port")
 
 	fs.Parse(args)
 
@@ -64,7 +65,7 @@ func cisteServer(home string, args []string) {
 		}
 	}()
 
-	cisteHttpServer()
+	cisteHttpServer(*httpdPort)
 
 	for {
 		time.Sleep(1 * time.Second)

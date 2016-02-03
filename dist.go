@@ -329,16 +329,16 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"ciste-web-content/dist/1382c29cdb72f6c99043675d6e13b625.ttf": cisteWebContentDist1382c29cdb72f6c99043675d6e13b625Ttf,
-	"ciste-web-content/dist/2614e058b2dcb9d6e2e964730d795540.eot": cisteWebContentDist2614e058b2dcb9d6e2e964730d795540Eot,
-	"ciste-web-content/dist/32400f4e08932a94d8bfd2422702c446.eot": cisteWebContentDist32400f4e08932a94d8bfd2422702c446Eot,
-	"ciste-web-content/dist/a35720c2fed2c7f043bc7e4ffb45e073.woff": cisteWebContentDistA35720c2fed2c7f043bc7e4ffb45e073Woff,
-	"ciste-web-content/dist/a3de2170e4e9df77161ea5d3f31b2668.ttf": cisteWebContentDistA3de2170e4e9df77161ea5d3f31b2668Ttf,
-	"ciste-web-content/dist/bf614256dbc49f4bf2cf786706bb0712.woff": cisteWebContentDistBf614256dbc49f4bf2cf786706bb0712Woff,
+	"ciste-web-content/dist/1382c29cdb72f6c99043675d6e13b625.ttf":   cisteWebContentDist1382c29cdb72f6c99043675d6e13b625Ttf,
+	"ciste-web-content/dist/2614e058b2dcb9d6e2e964730d795540.eot":   cisteWebContentDist2614e058b2dcb9d6e2e964730d795540Eot,
+	"ciste-web-content/dist/32400f4e08932a94d8bfd2422702c446.eot":   cisteWebContentDist32400f4e08932a94d8bfd2422702c446Eot,
+	"ciste-web-content/dist/a35720c2fed2c7f043bc7e4ffb45e073.woff":  cisteWebContentDistA35720c2fed2c7f043bc7e4ffb45e073Woff,
+	"ciste-web-content/dist/a3de2170e4e9df77161ea5d3f31b2668.ttf":   cisteWebContentDistA3de2170e4e9df77161ea5d3f31b2668Ttf,
+	"ciste-web-content/dist/bf614256dbc49f4bf2cf786706bb0712.woff":  cisteWebContentDistBf614256dbc49f4bf2cf786706bb0712Woff,
 	"ciste-web-content/dist/db812d8a70a4e88e888744c1c9a27e89.woff2": cisteWebContentDistDb812d8a70a4e88e888744c1c9a27e89Woff2,
-	"ciste-web-content/dist/f775f9cca88e21d45bebe185b27c0e5b.svg": cisteWebContentDistF775f9cca88e21d45bebe185b27c0e5bSvg,
-	"ciste-web-content/dist/index.html": cisteWebContentDistIndexHtml,
-	"ciste-web-content/dist/index.js": cisteWebContentDistIndexJs,
+	"ciste-web-content/dist/f775f9cca88e21d45bebe185b27c0e5b.svg":   cisteWebContentDistF775f9cca88e21d45bebe185b27c0e5bSvg,
+	"ciste-web-content/dist/index.html":                             cisteWebContentDistIndexHtml,
+	"ciste-web-content/dist/index.js":                               cisteWebContentDistIndexJs,
 }
 
 // AssetDir returns the file names below a certain
@@ -380,19 +380,20 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"ciste-web-content": &bintree{nil, map[string]*bintree{
 		"dist": &bintree{nil, map[string]*bintree{
-			"1382c29cdb72f6c99043675d6e13b625.ttf": &bintree{cisteWebContentDist1382c29cdb72f6c99043675d6e13b625Ttf, map[string]*bintree{}},
-			"2614e058b2dcb9d6e2e964730d795540.eot": &bintree{cisteWebContentDist2614e058b2dcb9d6e2e964730d795540Eot, map[string]*bintree{}},
-			"32400f4e08932a94d8bfd2422702c446.eot": &bintree{cisteWebContentDist32400f4e08932a94d8bfd2422702c446Eot, map[string]*bintree{}},
-			"a35720c2fed2c7f043bc7e4ffb45e073.woff": &bintree{cisteWebContentDistA35720c2fed2c7f043bc7e4ffb45e073Woff, map[string]*bintree{}},
-			"a3de2170e4e9df77161ea5d3f31b2668.ttf": &bintree{cisteWebContentDistA3de2170e4e9df77161ea5d3f31b2668Ttf, map[string]*bintree{}},
-			"bf614256dbc49f4bf2cf786706bb0712.woff": &bintree{cisteWebContentDistBf614256dbc49f4bf2cf786706bb0712Woff, map[string]*bintree{}},
+			"1382c29cdb72f6c99043675d6e13b625.ttf":   &bintree{cisteWebContentDist1382c29cdb72f6c99043675d6e13b625Ttf, map[string]*bintree{}},
+			"2614e058b2dcb9d6e2e964730d795540.eot":   &bintree{cisteWebContentDist2614e058b2dcb9d6e2e964730d795540Eot, map[string]*bintree{}},
+			"32400f4e08932a94d8bfd2422702c446.eot":   &bintree{cisteWebContentDist32400f4e08932a94d8bfd2422702c446Eot, map[string]*bintree{}},
+			"a35720c2fed2c7f043bc7e4ffb45e073.woff":  &bintree{cisteWebContentDistA35720c2fed2c7f043bc7e4ffb45e073Woff, map[string]*bintree{}},
+			"a3de2170e4e9df77161ea5d3f31b2668.ttf":   &bintree{cisteWebContentDistA3de2170e4e9df77161ea5d3f31b2668Ttf, map[string]*bintree{}},
+			"bf614256dbc49f4bf2cf786706bb0712.woff":  &bintree{cisteWebContentDistBf614256dbc49f4bf2cf786706bb0712Woff, map[string]*bintree{}},
 			"db812d8a70a4e88e888744c1c9a27e89.woff2": &bintree{cisteWebContentDistDb812d8a70a4e88e888744c1c9a27e89Woff2, map[string]*bintree{}},
-			"f775f9cca88e21d45bebe185b27c0e5b.svg": &bintree{cisteWebContentDistF775f9cca88e21d45bebe185b27c0e5bSvg, map[string]*bintree{}},
-			"index.html": &bintree{cisteWebContentDistIndexHtml, map[string]*bintree{}},
-			"index.js": &bintree{cisteWebContentDistIndexJs, map[string]*bintree{}},
+			"f775f9cca88e21d45bebe185b27c0e5b.svg":   &bintree{cisteWebContentDistF775f9cca88e21d45bebe185b27c0e5bSvg, map[string]*bintree{}},
+			"index.html":                             &bintree{cisteWebContentDistIndexHtml, map[string]*bintree{}},
+			"index.js":                               &bintree{cisteWebContentDistIndexJs, map[string]*bintree{}},
 		}},
 	}},
 }}
@@ -443,4 +444,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-

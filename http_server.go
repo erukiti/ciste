@@ -70,14 +70,21 @@ func staticFiles(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func cisteHttpServer() {
+func testvd(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.Host)
+}
+
+func cisteHttpServer(port int) {
 	regexpHandler := CreateRegexpHandler()
 	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/box/[0-9a-f]+/status$"), boxStatus)
 	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/box/[0-9a-f]+/output$"), boxOutput)
 	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/status$"), apiStatus)
 
 	regexpHandler.HandleFunc(regexp.MustCompile("^/[^/]*$"), staticFiles)
-	err := http.ListenAndServe(":3000", regexpHandler)
+
+	// regexpHandler.HandleFuncVHost("hoge", testvd)
+
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), regexpHandler)
 	if err != nil {
 		log.Println(err)
 	}
