@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/erukiti/go-util"
 	"io/ioutil"
@@ -54,7 +55,7 @@ func getSocketName(pid int) string {
 	return fmt.Sprintf("/tmp/ciste.%d.sock", pid)
 }
 
-func dispatch(appPath string) {
+func dispatch(box Box) {
 	var err error
 
 	log.Println("dispatch")
@@ -79,7 +80,14 @@ func dispatch(appPath string) {
 
 	defer c.Close()
 
-	_, err = c.Write([]byte(fmt.Sprintf("%s\n", appPath)))
+	jsonData, err := json.Marshal(box)
+	if err != nil {
+		log.Printf("json failed %v\n", err)
+		return
+	}
+
+	log.Printf("[debug] %s", string(jsonData))
+	_, err = c.Write(jsonData)
 	if err != nil {
 		log.Printf("socket write error: %v\n", err)
 	} else {

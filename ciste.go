@@ -138,7 +138,9 @@ func main() {
 
 		fmt.Println("hoge")
 
-		dispatch(appPath)
+		box := CreateBox(newrefs, os.Args[2], os.Args[4])
+
+		dispatch(*box)
 
 	case "server":
 		cisteServer(home, os.Args[2:])
