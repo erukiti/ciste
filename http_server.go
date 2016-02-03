@@ -37,6 +37,7 @@ func boxOutput(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		// 404 とか適当なの返す
 		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintln(w, `{"error": "resource not found"}`)
 	} else {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		fmt.Fprintln(w, string(outputText))
@@ -46,14 +47,30 @@ func boxOutput(w http.ResponseWriter, r *http.Request) {
 func apiStatus(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%v\n", r)
 
-	fmt.Fprintf(w, "HOGE!")
+	fmt.Fprintln(w, "HOGE!")
+}
+
+func staticFiles(w http.ResponseWriter, r *http.Request) {
+	fn := fmt.Sprintf("ciste-web-content/dist/%s", strings.Trim(r.URL.Path, "/"))
+	data, err := Asset(fn)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprintln(w, `file not found`)
+	} else {
+		//Won(*3*)chu FixMe!
+		// MIME file type?
+		w.Write(data)
+	}
 }
 
 func cisteHttpServer() {
 	regexpHandler := CreateRegexpHandler()
-	regexpHandler.HandleFunc(regexp.MustCompile("/api/v1/box/[0-9a-f]+/status"), boxStatus)
-	regexpHandler.HandleFunc(regexp.MustCompile("/api/v1/box/[0-9a-f]+/output"), boxOutput)
-	regexpHandler.HandleFunc(regexp.MustCompile("/api/v1/status"), apiStatus)
+	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/box/[0-9a-f]+/status$"), boxStatus)
+	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/box/[0-9a-f]+/output$"), boxOutput)
+	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/status$"), apiStatus)
+
+	regexpHandler.HandleFunc(regexp.MustCompile("^/[^/]+$"), staticFiles)
 	err := http.ListenAndServe(":3000", regexpHandler)
 	if err != nil {
 		log.Println(err)
