@@ -51,8 +51,14 @@ func apiStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func staticFiles(w http.ResponseWriter, r *http.Request) {
-	fn := fmt.Sprintf("ciste-web-content/dist/%s", strings.Trim(r.URL.Path, "/"))
-	data, err := Asset(fn)
+	var fn string
+	if r.URL.Path == "/" {
+		fn = "index.html"
+	} else {
+		fn = strings.Trim(r.URL.Path, "/")
+	}
+	path := fmt.Sprintf("ciste-web-content/dist/%s", fn)
+	data, err := Asset(path)
 	if err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusNotFound)
@@ -70,7 +76,7 @@ func cisteHttpServer() {
 	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/box/[0-9a-f]+/output$"), boxOutput)
 	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/status$"), apiStatus)
 
-	regexpHandler.HandleFunc(regexp.MustCompile("^/[^/]+$"), staticFiles)
+	regexpHandler.HandleFunc(regexp.MustCompile("^/[^/]*$"), staticFiles)
 	err := http.ListenAndServe(":3000", regexpHandler)
 	if err != nil {
 		log.Println(err)
