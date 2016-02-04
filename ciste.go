@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/erukiti/go-util"
 	"io"
@@ -24,31 +25,58 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"os/user"
 	"strings"
 )
 
 const PidFile = "~/.ciste/pid"
 
+type Conf struct {
+	LogFile string
+	Domain  string
+	Port    int
+}
+
+func writeConf(home string, conf Conf, confPath string) {
+	jsonData, err := json.Marshal(conf)
+	if err != nil {
+		log.Printf("json failed %v\n", err)
+		return
+	}
+
+	log.Printf("conf: %s\n", string(jsonData))
+
+	ioutil.WriteFile(util.PathResolv(home, confPath), jsonData, 0644)
+}
+
+func readConf(home string, confPath string) Conf {
+	jsonData, err := ioutil.ReadFile(util.PathResolv(home, confPath))
+	if err != nil {
+		log.Println(err)
+		return Conf{"~/.ciste/log.txt", "localhost", 3000}
+	}
+
+	var conf Conf
+	json.Unmarshal(jsonData, &conf)
+
+	return conf
+
+}
+
 func main() {
-	var err error
+	// var err error
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	logWriter, err := os.OpenFile(util.PathResolv("/", "~/log.txt"), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
-	if err != nil {
-		log.Printf("log file error: %s\n", err)
-	} else {
-		log.SetOutput(logWriter)
-	}
+	// logWriter, err := os.OpenFile(util.PathResolv("/", "~/log.txt"), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	// if err != nil {
+	// 	log.Printf("log file error: %s\n", err)
+	// } else {
+	// 	log.SetOutput(logWriter)
+	// }
 
-	current, err := user.Current()
-	var home string
-	if err != nil {
-		log.Printf("failed user.Current: %s", err)
+	home := util.GetMyHome()
+	if home == "" {
 		home = "/home/git"
-	} else {
-		home = current.HomeDir
 	}
 
 	switch os.Args[1] {
@@ -144,6 +172,9 @@ func main() {
 
 	case "server":
 		cisteServer(home, os.Args[2:])
+
+	case "setup":
+		cisteSetup(home, os.Args[2:])
 	}
 
 	_ = home
