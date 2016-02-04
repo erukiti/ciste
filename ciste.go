@@ -67,16 +67,20 @@ func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	// logWriter, err := os.OpenFile(util.PathResolv("/", "~/log.txt"), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
-	// if err != nil {
-	// 	log.Printf("log file error: %s\n", err)
-	// } else {
-	// 	log.SetOutput(logWriter)
-	// }
-
 	home := util.GetMyHome()
 	if home == "" {
 		home = "/home/git"
+	}
+
+	conf := readConf(home, "~/.ciste/conf.json")
+
+	if conf.LogFile != "" {
+		logWriter, err := os.OpenFile(util.PathResolvWithMkdirAll(home, conf.LogFile), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+		if err != nil {
+			log.Printf("log file error: %s\n", err)
+		} else {
+			log.SetOutput(logWriter)
+		}
 	}
 
 	switch os.Args[1] {
@@ -175,6 +179,9 @@ func main() {
 
 	case "setup":
 		cisteSetup(home, os.Args[2:])
+
+	case "pubkey":
+		cistePubkey(home, os.Args[2:])
 	}
 
 	_ = home
