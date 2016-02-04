@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -8,6 +9,10 @@ import (
 	"regexp"
 	"strings"
 )
+
+type Output struct {
+	Output string
+}
 
 func boxStatus(w http.ResponseWriter, r *http.Request) {
 	a := strings.Split(r.URL.Path, "/")
@@ -20,9 +25,11 @@ func boxStatus(w http.ResponseWriter, r *http.Request) {
 		// 404 とか適当なの返す
 		w.WriteHeader(http.StatusNotFound)
 		w.Header().Set("Content-Type", "text/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		fmt.Fprintln(w, `{"error": "not found"}`)
 	} else {
 		w.Header().Set("Content-Type", "text/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		fmt.Fprintln(w, string(statusText))
 	}
 }
@@ -37,16 +44,28 @@ func boxOutput(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		// 404 とか適当なの返す
 		w.WriteHeader(http.StatusNotFound)
+		w.Header().Set("Content-Type", "text/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		fmt.Fprintln(w, `{"error": "resource not found"}`)
 	} else {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		fmt.Fprintln(w, string(outputText))
+		w.Header().Set("Content-Type", "text/json")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
+		output := Output{string(outputText)}
+		jsonData, err := json.Marshal(output)
+		if err != nil {
+			log.Printf("json failed %v\n", err)
+			return
+		}
+
+		w.Write(jsonData)
 	}
 }
 
 func apiStatus(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%v\n", r)
 
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	fmt.Fprintln(w, "HOGE!")
 }
 
@@ -76,8 +95,8 @@ func testvd(w http.ResponseWriter, r *http.Request) {
 
 func cisteHttpServer(port int) {
 	regexpHandler := CreateRegexpHandler()
-	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/box/[0-9a-f]+/status$"), boxStatus)
-	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/box/[0-9a-f]+/output$"), boxOutput)
+	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/box/[0-9a-f]{40}/status$"), boxStatus)
+	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/box/[0-9a-f]{40}/output$"), boxOutput)
 	regexpHandler.HandleFunc(regexp.MustCompile("^/api/v1/status$"), apiStatus)
 
 	regexpHandler.HandleFunc(regexp.MustCompile("^/[^/]*$"), staticFiles)

@@ -14,7 +14,7 @@ func ci(box *Box) {
 	// _, err := os.Stat(fmt.Sprintf("%s/package.json", appPath))
 
 	dockerfile := []byte(`
-FROM ndenv:base-wheezy
+FROM erukiti/ndenv:base-wheezy
 
 RUN mkdir /app
 ADD * /app/
