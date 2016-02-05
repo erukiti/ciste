@@ -52,6 +52,8 @@ func cisteReceive(home string, conf Conf, args []string) {
 	newrefs := getNewRefs()
 	log.Printf("[debug] new refs: ", newrefs)
 
+	fmt.Printf("http://%s:%d/#%s\n", conf.Domain, conf.Port, newrefs)
+
 	appPath := conf.GetAppPath(home, newrefs)
 
 	os.MkdirAll(appPath, 0755)

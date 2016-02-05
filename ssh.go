@@ -66,11 +66,11 @@ func cisteSSH(home string, conf Conf, args []string) {
 	defer stdout.Close()
 	go io.Copy(stdin, os.Stdin)
 	go io.Copy(os.Stdout, stdout)
+	// FIXME: remove "remote: "
 
 	err = cmd.Run()
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
 	}
-	log.Println("hoge")
 }
