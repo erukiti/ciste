@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/erukiti/go-util"
 	"io"
 	"io/ioutil"
 	"log"
@@ -13,7 +14,14 @@ import (
 func ci(conf Conf, box *Box) {
 	// _, err := os.Stat(fmt.Sprintf("%s/package.json", appPath))
 
-	dockerfile := []byte(`
+	appPath := box.GetAppDir()
+
+	_, err := os.Stat(util.PathResolv(conf.home, fmt.Sprintf("%s/.node-version", appPath)))
+	isExistNodeVersion := err == nil
+
+	var dockerfile []byte
+	if isExistNodeVersion {
+		dockerfile = []byte(`
 FROM erukiti/ndenv:base-wheezy
 
 RUN mkdir /app
@@ -25,7 +33,19 @@ RUN bash -l -c "npm install"
 CMD bash -l -c "cd /app ; npm start"
 `)
 
-	appPath := box.GetAppDir()
+	} else {
+		dockerfile = []byte(`
+FROM erukiti/ndenv:4.2.6-wheezy
+
+RUN mkdir /app
+ADD * /app/
+WORKDIR /app
+
+RUN bash -l -c "npm install"
+CMD bash -l -c "cd /app ; npm start"
+`)
+	}
+
 	ioutil.WriteFile(fmt.Sprintf("%s/Dockerfile", appPath), dockerfile, 0644)
 
 	var success bool

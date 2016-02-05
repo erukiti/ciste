@@ -50,7 +50,7 @@ func cisteReceive(home string, conf Conf, args []string) {
 	log.Printf("receive start. %v", args)
 
 	newrefs := getNewRefs()
-	log.Printf("[debug] new refs: ", newrefs)
+	log.Printf("[debug] new refs: %s", newrefs)
 
 	fmt.Printf("http://%s:%d/#%s\n", conf.Domain, conf.Port, newrefs)
 
