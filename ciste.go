@@ -18,14 +18,12 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/erukiti/go-util"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
-	"strings"
+	"fmt"
+	"flag"
 )
 
 const PidFile = "~/.ciste/pid"
@@ -34,6 +32,15 @@ type Conf struct {
 	LogFile string
 	Domain  string
 	Port    int
+	home string
+}
+
+func (c *Conf) GetRepositoryPath(home string, repo string) string {
+	return util.PathResolvWithMkdirAll(home, fmt.Sprintf("~/.ciste/repository/%s", repo))
+}
+
+func (c *Conf) GetAppPath(home string, ref string) string {
+	return util.PathResolvWithMkdirAll(home, fmt.Sprintf("~/.ciste/app/%s", ref))
 }
 
 func writeConf(home string, conf Conf, confPath string) {
@@ -51,15 +58,24 @@ func writeConf(home string, conf Conf, confPath string) {
 func readConf(home string, confPath string) Conf {
 	jsonData, err := ioutil.ReadFile(util.PathResolv(home, confPath))
 	if err != nil {
-		log.Println(err)
-		return Conf{"~/.ciste/log.txt", "localhost", 3000}
+		// default flag?
+		return Conf{"~/.ciste/log.txt", "localhost", 3000, home}
 	}
 
 	var conf Conf
 	json.Unmarshal(jsonData, &conf)
+	conf.home = home
 
 	return conf
 
+}
+
+func printUsage() {
+	log.Println(os.Args)
+	fmt.Printf("usage: %s <sub command>...\n", os.Args[0])
+	fmt.Println("sub command:")
+	fmt.Println("  setup")
+	fmt.Println("  pubkey")
 }
 
 func main() {
@@ -72,119 +88,51 @@ func main() {
 		home = "/home/git"
 	}
 
-	conf := readConf(home, "~/.ciste/conf.json")
-
-	if conf.LogFile != "" {
-		logWriter, err := os.OpenFile(util.PathResolvWithMkdirAll(home, conf.LogFile), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
-		if err != nil {
-			log.Printf("log file error: %s\n", err)
-		} else {
-			log.SetOutput(logWriter)
-		}
+	if len(os.Args) < 1 {
+		printUsage()
+		os.Exit(1)
 	}
 
-	switch os.Args[1] {
+	confPath := flag.String("conf", "~/.ciste/conf.json", "configuration file")
+	logFileOverWritten := flag.String("log", "", "log file")
+
+	flag.Parse()
+
+	var logFile string
+	conf := readConf(home, *confPath)
+	if logFileOverWritten != nil && *logFileOverWritten != "" {
+		logFile = *logFileOverWritten
+	} else {
+		logFile = conf.LogFile
+	}
+
+	logWriter, err := os.OpenFile(util.PathResolvWithMkdirAll(home, logFile), os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	if err != nil {
+		log.Printf("log file error: %s\n", err)
+	} else {
+		log.SetOutput(logWriter)
+	}
+
+	log.Println(os.Args)
+	args := flag.Args()
+	switch args[0] {
 	case "ssh":
-		// len
-
-		original := os.Getenv("SSH_ORIGINAL_COMMAND")
-		sp := strings.Split(original, " ")
-		originalCommand := sp[0]
-		repo := strings.Trim(sp[1], "'")
-
-		repoPath := fmt.Sprintf("%s/repository/%s", home, repo)
-
-		_, err := os.Stat(repoPath)
-		if err != nil && os.IsNotExist(err) {
-			os.MkdirAll(repoPath, 0755)
-			cmd := exec.Command("git", "init", "--bare")
-			cmd.Dir = repoPath
-			out, err := cmd.Output()
-			if err != nil {
-				log.Println(string(out))
-				log.Println(err)
-				os.Exit(1)
-			}
-			log.Println(string(out))
-
-			hookPath := fmt.Sprintf("%s/hooks/pre-receive", repoPath)
-
-			code := fmt.Sprintf("#! /bin/sh\ncat | %s receive %s %s %s\n", os.Args[0], os.Args[2], os.Args[3], repo)
-			ioutil.WriteFile(hookPath, []byte(code), 0755)
-		}
-
-		receiveCommand := fmt.Sprintf("%s 'repository/%s'", originalCommand, repo)
-		log.Println(receiveCommand)
-		cmd := exec.Command("git-shell", "-c", receiveCommand)
-		stdin, err := cmd.StdinPipe()
-		defer stdin.Close()
-		stdout, err := cmd.StdoutPipe()
-		defer stdout.Close()
-
-		go io.Copy(stdin, os.Stdin)
-		go io.Copy(os.Stdout, stdout)
-		err = cmd.Run()
-		if err != nil {
-			log.Println(err)
-			os.Exit(1)
-		}
+		cisteSSH(home, conf, args[1:])
 
 	case "receive":
-		log.Println("receive start")
-
-		fmt.Printf("%v\n", os.Args)
-
-		buf := make([]byte, 1024)
-		n, err := os.Stdin.Read(buf)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		if n == 0 {
-			fmt.Println("failed: get refs")
-			os.Exit(1)
-		}
-
-		ar := strings.Split(string(buf), " ")
-		if len(ar) < 3 {
-			fmt.Println("illegal refs")
-			fmt.Println(ar)
-			os.Exit(1)
-		}
-
-		newrefs := ar[1]
-		// ar = strings.Split(ar[2], "/")
-		fmt.Println(newrefs)
-		appPath := fmt.Sprintf("%s/app/%s", home, newrefs)
-		fmt.Println(appPath)
-		os.MkdirAll(appPath, 0755)
-		repoPath := fmt.Sprintf("%s/repository/%s", home, os.Args[4])
-		copyCommand := fmt.Sprintf("cd %s ; (cd %s ; git archive %s) | tar xvf -", appPath, repoPath, newrefs)
-		fmt.Println(copyCommand)
-		out, err := exec.Command("/bin/sh", "-c", copyCommand).Output()
-		if err != nil {
-			fmt.Println(out)
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		fmt.Println("hoge")
-
-		box := CreateBox(newrefs, os.Args[2], os.Args[4])
-
-		dispatch(*box)
+		cisteReceive(home, conf, args[1:])
 
 	case "server":
-		cisteServer(home, os.Args[2:])
+		cisteServer(home, conf, args[1:])
 
 	case "setup":
-		cisteSetup(home, os.Args[2:])
+		cisteSetup(home, conf, args[1:])
 
 	case "pubkey":
-		cistePubkey(home, os.Args[2:])
+		cistePubkey(home, conf, args[1:])
+	default:
+		printUsage()
 	}
-
-	_ = home
 
 	os.Exit(1)
 }

@@ -25,7 +25,7 @@ import (
 	"os"
 )
 
-func cistePubkey(home string, args []string) {
+func cistePubkey(home string, conf Conf, args []string) {
 	if len(args) != 4 {
 		fmt.Printf("usage: %s pubkey <user> <public key>\n", os.Args[0])
 		os.Exit(1)

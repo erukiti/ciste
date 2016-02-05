@@ -58,7 +58,7 @@ func getSocketName(pid int) string {
 func dispatch(box Box) {
 	var err error
 
-	log.Println("dispatch")
+	log.Println("dispatch box.")
 
 	pid, err := readPidFile()
 	log.Printf("[debug] PID: %v", pid)

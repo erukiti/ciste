@@ -4,30 +4,18 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/erukiti/go-util"
 	"log"
 	"net"
-	// "net/http"
 	"os"
 	"time"
 )
 
-func cisteServer(home string, args []string) {
+func cisteServer(home string, conf Conf, args []string) {
 	fs := flag.NewFlagSet("server", flag.ExitOnError)
-	logFile := fs.String("log", "~/.ciste/log.txt", "log file")
-	httpdPort := fs.Int("port", 3000, "httpd port")
+	port := fs.Int("port", conf.Port, "httpd port")
+	// domain := fs.String("domain", conf.Domain, "FQDN")
 
 	fs.Parse(args)
-
-	if logFile != nil && *logFile != "" {
-		s := util.PathResolvWithMkdirAll(home, *logFile)
-		logWriter, err := os.OpenFile(s, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
-		if err != nil {
-			log.Printf("log file error: %s\n", err)
-		} else {
-			log.SetOutput(logWriter)
-		}
-	}
 
 	pid := os.Getpid()
 
@@ -60,12 +48,12 @@ func cisteServer(home string, args []string) {
 
 				log.Printf("%v\n", box)
 
-				go ci(box)
+				go ci(conf, box)
 			}(fd)
 		}
 	}()
 
-	cisteHttpServer(*httpdPort)
+	cisteHttpServer(*port)
 
 	for {
 		time.Sleep(1 * time.Second)

@@ -18,7 +18,7 @@ type Box struct {
 }
 
 func getAppDir(rev string) string {
-	return util.PathResolv("", fmt.Sprintf("~/app/%s", rev))
+	return util.PathResolv("", fmt.Sprintf("~/.ciste/app/%s", rev))
 }
 
 func getImageId(rev string) string {

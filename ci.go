@@ -10,7 +10,7 @@ import (
 	"os/exec"
 )
 
-func ci(box *Box) {
+func ci(conf Conf, box *Box) {
 	// _, err := os.Stat(fmt.Sprintf("%s/package.json", appPath))
 
 	dockerfile := []byte(`

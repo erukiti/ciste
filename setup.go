@@ -23,7 +23,7 @@ import (
 	"os"
 )
 
-func cisteSetup(home string, args []string) {
+func cisteSetup(home string, conf Conf, args []string) {
 	fs := flag.NewFlagSet("setup", flag.ExitOnError)
 
 	domain := fs.String("domain", "localhost", "server domain")
@@ -44,6 +44,6 @@ func cisteSetup(home string, args []string) {
 	os.MkdirAll(util.PathResolv(home, "~/.ciste/app"), 0755)
 	os.MkdirAll(util.PathResolv(home, "~/.ciste/repository"), 0755)
 
-	conf := Conf{*logFile, *domain, *port}
+	conf = Conf{*logFile, *domain, *port, ""}
 	writeConf(home, conf, *confFile)
 }
