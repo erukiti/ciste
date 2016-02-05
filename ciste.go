@@ -18,12 +18,12 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
+	"fmt"
 	"github.com/erukiti/go-util"
 	"io/ioutil"
 	"log"
 	"os"
-	"fmt"
-	"flag"
 )
 
 const PidFile = "~/.ciste/pid"
@@ -32,7 +32,7 @@ type Conf struct {
 	LogFile string
 	Domain  string
 	Port    int
-	home string
+	home    string
 }
 
 func (c *Conf) GetRepositoryPath(home string, repo string) string {
