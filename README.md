@@ -23,6 +23,7 @@ $ vagrant ssh
 $ sudo cp ciste /usr/local/bin/
 $ sudo su - git
 $ ciste setup
+$ ciste pubkey <username> <ssh public key>
 $ ciste server &
 ```
 
@@ -35,6 +36,7 @@ $ sudo cp ciste /usr/local/bin/
 $ sudo su - git
 $ docker-machine create --driver virtualbox dev
 $ ciste setup
+$ ciste pubkey <username> <ssh public key>
 $ ciste server &
 $ open http://$(docker-machine ip):3000/
 ```
