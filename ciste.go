@@ -132,7 +132,6 @@ func main() {
 		cistePubkey(home, conf, args[1:])
 	default:
 		printUsage()
+		os.Exit(0)
 	}
-
-	os.Exit(1)
 }
